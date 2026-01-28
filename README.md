@@ -1,4 +1,4 @@
-# WebAR Restaurant Menu Starter
+# MenuAR_Demo — WebAR Restaurant Menu Starter
 
 Production-ready WebAR menu using **Next.js 14 (App Router)**, **React**, and **@google/model-viewer**. No mobile app, Unity, or designer required. Works in the browser on Android and iOS.
 
