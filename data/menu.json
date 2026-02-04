@@ -4,20 +4,20 @@
     "name": "Signature Burger",
     "price": "$14.99",
     "description": "Angus beef, aged cheddar, house sauce, brioche bun. Served with fries.",
-    "modelPath": "/models/sample.glb"
+    "modelPath": "/models/food.glb"
   },
   {
     "slug": "truffle-fries",
     "name": "Truffle Parmesan Fries",
     "price": "$8.99",
     "description": "Crispy hand-cut fries with truffle oil and grated parmesan.",
-    "modelPath": "/models/sample.glb"
+    "modelPath": "/models/food.glb"
   },
   {
     "slug": "caesar-salad",
     "name": "Classic Caesar Salad",
     "price": "$12.99",
     "description": "Romaine, parmesan, croutons, house Caesar dressing. Add chicken +$4.",
-    "modelPath": "/models/sample.glb"
+    "modelPath": "/models/food.glb"
   }
 ]
