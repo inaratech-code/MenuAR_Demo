@@ -246,6 +246,7 @@ function ARViewerClient({ src, alt, poster }) {
         >
           <button
             slot="ar-button"
+            className="ar-vr-button"
             style={{
               position: "absolute",
               bottom: "20px",
@@ -264,18 +265,39 @@ function ARViewerClient({ src, alt, poster }) {
               textTransform: "uppercase",
               letterSpacing: "0.5px",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateX(-50%) translateY(-4px)";
-              e.currentTarget.style.boxShadow = "0 8px 25px rgba(102, 126, 234, 0.5)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateX(-50%) translateY(0)";
-              e.currentTarget.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.4)";
-            }}
           >
             🎯 View in AR
           </button>
         </model-viewer>
+        <button
+          className="ar-vr-button"
+          onClick={() => {
+            if (viewerRef.current && typeof viewerRef.current.enterVR === "function") {
+              viewerRef.current.enterVR();
+            }
+          }}
+          style={{
+            position: "absolute",
+            bottom: "80px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            padding: "14px 32px",
+            fontSize: "1.1rem",
+            fontWeight: 700,
+            color: "#fff",
+            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            border: "none",
+            borderRadius: "16px",
+            cursor: "pointer",
+            boxShadow: "0 6px 20px rgba(240, 147, 251, 0.4)",
+            transition: "all 0.3s ease",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+            zIndex: 10,
+          }}
+        >
+          🥽 View in VR
+        </button>
       </div>
     </div>
   );

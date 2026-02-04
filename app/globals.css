@@ -45,3 +45,16 @@ a:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
 }
+
+.ar-vr-button {
+  transition: all 0.3s ease;
+}
+
+.ar-vr-button:hover {
+  transform: translateX(-50%) translateY(-4px) !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5) !important;
+}
+
+button[slot="vr-button"]:hover {
+  box-shadow: 0 8px 25px rgba(240, 147, 251, 0.5) !important;
+}
