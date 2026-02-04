@@ -32,31 +32,39 @@ export default function PhoneTestHint() {
     <div
       style={{
         marginTop: "2rem",
-        padding: "1rem 1.25rem",
-        background: "#e8f4fc",
-        borderRadius: "8px",
-        border: "1px solid #b8daff",
+        padding: "1.5rem",
+        background: "rgba(255,255,255,0.95)",
+        borderRadius: "16px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+        backdropFilter: "blur(10px)",
       }}
     >
-      <p style={{ margin: "0 0 0.5rem 0", fontWeight: 600, color: "#084298" }}>
-        Test on your phone
+      <p style={{ margin: "0 0 0.75rem 0", fontWeight: 700, fontSize: "1.1rem", color: "#667eea" }}>
+        📱 Test on your phone
       </p>
-      <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", color: "#055160" }}>
+      <p style={{ margin: "0 0 1rem 0", fontSize: "0.95rem", color: "#555", lineHeight: 1.6 }}>
         Use the same Wi‑Fi as this computer, then open:
       </p>
-      <p
-        style={{
-          margin: 0,
-          fontFamily: "monospace",
-          fontSize: "1rem",
-          wordBreak: "break-all",
-          color: "#0066cc",
-          fontWeight: 600,
-        }}
-      >
-        {url}
-      </p>
-      <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.8rem", color: "#666" }}>
+      <div style={{
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        padding: "1rem",
+        borderRadius: "12px",
+        marginBottom: "1rem"
+      }}>
+        <p
+          style={{
+            margin: 0,
+            fontFamily: "monospace",
+            fontSize: "1.1rem",
+            wordBreak: "break-all",
+            color: "#fff",
+            fontWeight: 600,
+          }}
+        >
+          {url}
+        </p>
+      </div>
+      <p style={{ margin: "0", fontSize: "0.85rem", color: "#777", lineHeight: 1.5 }}>
         On your phone, type this exactly (include <strong>http://</strong> and
         every digit, e.g. 192 not 92).
       </p>

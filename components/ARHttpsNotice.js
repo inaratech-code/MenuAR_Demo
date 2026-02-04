@@ -19,30 +19,38 @@ export default function ARHttpsNotice() {
   return (
     <div
       style={{
-        marginTop: "1rem",
-        padding: "1rem",
-        background: "#fff8e6",
-        borderRadius: "8px",
-        border: "1px solid #ffe082",
-        fontSize: "0.9rem",
-        color: "#333",
+        marginTop: "1.5rem",
+        padding: "1.5rem",
+        background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+        borderRadius: "16px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+        fontSize: "0.95rem",
+        color: "#fff",
       }}
     >
-      <p style={{ margin: "0 0 0.5rem 0", fontWeight: 600 }}>
-        View in AR isn’t available on this URL
+      <p style={{ margin: "0 0 0.75rem 0", fontWeight: 700, fontSize: "1.1rem" }}>
+        ⚠️ View in AR isn't available on this URL
       </p>
-      <p style={{ margin: 0, color: "#555" }}>
-        AR needs a secure page (HTTPS). Right now you’re on HTTP. Use one of
+      <p style={{ margin: "0 0 1rem 0", color: "rgba(255,255,255,0.95)", lineHeight: 1.6 }}>
+        AR needs a secure page (HTTPS). Right now you're on HTTP. Use one of
         these:
       </p>
-      <ul style={{ margin: "0.5rem 0 0 1.25rem", padding: 0 }}>
-        <li style={{ marginBottom: "0.25rem" }}>
+      <ul style={{ margin: "0", padding: "0", listStyle: "none" }}>
+        <li style={{ marginBottom: "0.75rem", paddingLeft: "1.5rem", position: "relative" }}>
+          <span style={{ position: "absolute", left: 0 }}>1️⃣</span>
           <strong>Deploy to Vercel</strong> and open the site on your phone using
           the Vercel HTTPS URL.
         </li>
-        <li style={{ marginBottom: "0.25rem" }}>
+        <li style={{ marginBottom: "0", paddingLeft: "1.5rem", position: "relative" }}>
+          <span style={{ position: "absolute", left: 0 }}>2️⃣</span>
           <strong>Local HTTPS tunnel:</strong> run{" "}
-          <code style={{ background: "#eee", padding: "2px 6px", borderRadius: 4 }}>
+          <code style={{ 
+            background: "rgba(255,255,255,0.3)", 
+            padding: "4px 8px", 
+            borderRadius: "6px",
+            fontFamily: "monospace",
+            fontWeight: 600
+          }}>
             npx ngrok http 3000
           </code>
           , then on your phone open the <strong>https://</strong> URL ngrok
