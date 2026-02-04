@@ -41,6 +41,19 @@ function ARViewerClient({ src, alt, poster }) {
     };
     el.addEventListener("load", onLoad);
     el.addEventListener("error", onErr);
+    
+    // Configure AR settings for stability and interaction
+    if (el && typeof el.setAttribute === "function") {
+      // Ensure touch gestures are enabled for zoom
+      el.setAttribute("touch-action", "pan-y pinch-zoom");
+      // Enable interaction when focused
+      el.setAttribute("interaction-policy", "allow-when-focused");
+      // Set AR placement for stable positioning
+      el.setAttribute("ar-placement", "floor");
+      // Auto scale for proper sizing
+      el.setAttribute("ar-scale", "auto");
+    }
+    
     return () => {
       el.removeEventListener("load", onLoad);
       el.removeEventListener("error", onErr);
@@ -132,8 +145,12 @@ function ARViewerClient({ src, alt, poster }) {
           alt={alt || "3D model"}
           ar
           ar-modes="webxr scene-viewer quick-look"
+          ar-placement="floor"
+          ar-scale="auto"
           environment-image="neutral"
           camera-controls
+          touch-action="pan-y pinch-zoom"
+          interaction-policy="allow-when-focused"
           auto-rotate
           loading="eager"
           style={{
