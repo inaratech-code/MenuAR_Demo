@@ -2,6 +2,22 @@
 
 import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
+import {
+  AR_SCALE_METERS,
+  AR_PLACEMENT,
+  AR_MODES,
+  CAMERA_ORBIT,
+  CAMERA_TARGET,
+  MIN_CAMERA_ORBIT,
+  MAX_CAMERA_ORBIT,
+  ENVIRONMENT_IMAGE,
+  EXPOSURE,
+  SHADOW_INTENSITY,
+  TONE_MAPPING,
+  USE_INTERSECTION_OBSERVER,
+  INTERSECTION_ROOT_MARGIN,
+  INTERSECTION_THRESHOLD,
+} from "@/lib/modelViewerConfig";
 
 function isLikelyARCapableMobile() {
   if (typeof navigator === "undefined") return false;
@@ -20,10 +36,11 @@ function ARViewerClient({ src, alt, poster }) {
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [modelRequested, setModelRequested] = useState(true);
+  const [modelRequested, setModelRequested] = useState(!USE_INTERSECTION_OBSERVER);
   const [showTapToPlaceOverlay, setShowTapToPlaceOverlay] = useState(false);
   const pendingActivateARRef = useRef(false);
   const viewerRef = useRef(null);
+  const containerRef = useRef(null);
   const onMobile = typeof window !== "undefined" && isLikelyARCapableMobile();
 
   const fullSrc =
@@ -43,7 +60,9 @@ function ARViewerClient({ src, alt, poster }) {
   const handleViewInAR = () => {
     if (!fullSrc) return;
     try {
-      const seen = typeof sessionStorage !== "undefined" && sessionStorage.getItem(TAP_TO_PLACE_STORAGE_KEY);
+      const seen =
+        typeof sessionStorage !== "undefined" &&
+        sessionStorage.getItem(TAP_TO_PLACE_STORAGE_KEY);
       if (seen) {
         pendingActivateARRef.current = true;
         setModelRequested(true);
@@ -61,7 +80,8 @@ function ARViewerClient({ src, alt, poster }) {
   const dismissTapToPlaceAndEnterAR = () => {
     setShowTapToPlaceOverlay(false);
     try {
-      if (typeof sessionStorage !== "undefined") sessionStorage.setItem(TAP_TO_PLACE_STORAGE_KEY, "1");
+      if (typeof sessionStorage !== "undefined")
+        sessionStorage.setItem(TAP_TO_PLACE_STORAGE_KEY, "1");
     } catch (_) {}
     pendingActivateARRef.current = true;
     setModelRequested(true);
@@ -71,21 +91,38 @@ function ARViewerClient({ src, alt, poster }) {
   const handleExitAR = () => {
     const el = viewerRef.current;
     if (!el?.shadowRoot) return;
-    const exitBtn = el.shadowRoot.querySelector("#default-exit-webxr-ar-button");
+    const exitBtn = el.shadowRoot.querySelector(
+      "#default-exit-webxr-ar-button"
+    );
     if (exitBtn) exitBtn.click();
   };
 
   const handleReset = () => {
     const el = viewerRef.current;
     if (!el) return;
-    if (typeof el.resetTurntable === "function") {
-      el.resetTurntable();
-    }
-    if (typeof el.resetFieldOfView === "function") {
-      el.resetFieldOfView();
-    }
+    if (typeof el.resetTurntable === "function") el.resetTurntable();
+    if (typeof el.resetFieldOfView === "function") el.resetFieldOfView();
   };
 
+  // Lazy-load: request model only when viewer is in viewport (mobile optimization)
+  useEffect(() => {
+    if (!USE_INTERSECTION_OBSERVER || !fullSrc || modelRequested) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) setModelRequested(true);
+      },
+      {
+        rootMargin: INTERSECTION_ROOT_MARGIN,
+        threshold: INTERSECTION_THRESHOLD,
+      }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [fullSrc, modelRequested]);
+
+  // Model-viewer event setup and attribute config
   useEffect(() => {
     const el = viewerRef.current;
     if (!el) return;
@@ -109,27 +146,31 @@ function ARViewerClient({ src, alt, poster }) {
 
     const onLoadWithAR = () => {
       onLoad();
-      if (pendingActivateARRef.current && typeof el.activateAR === "function") {
+      if (
+        pendingActivateARRef.current &&
+        typeof el.activateAR === "function"
+      ) {
         pendingActivateARRef.current = false;
         requestAnimationFrame(() => {
           setTimeout(() => el.activateAR(), 50);
         });
       }
     };
+
     el.addEventListener("load", onLoadWithAR);
     el.addEventListener("error", onErr);
     el.addEventListener("progress", onProgress);
-    el.addEventListener("ar-status", () => {});
 
     if (typeof el.setAttribute === "function") {
       el.setAttribute("touch-action", "pan-y pinch-zoom");
       el.setAttribute("interaction-policy", "allow-when-focused");
       el.setAttribute("ar-scale", "fixed");
-      el.setAttribute("ar-scale-value", "0.25");
-      el.setAttribute("ar-modes", "webxr scene-viewer quick-look");
-      el.setAttribute("shadow-intensity", "1");
-      el.setAttribute("exposure", "1");
-      el.setAttribute("environment-image", "neutral");
+      el.setAttribute("ar-scale-value", AR_SCALE_METERS);
+      el.setAttribute("ar-placement", AR_PLACEMENT);
+      el.setAttribute("ar-modes", AR_MODES);
+      el.setAttribute("shadow-intensity", SHADOW_INTENSITY);
+      el.setAttribute("exposure", EXPOSURE);
+      el.setAttribute("environment-image", ENVIRONMENT_IMAGE);
     }
 
     return () => {
@@ -139,9 +180,9 @@ function ARViewerClient({ src, alt, poster }) {
     };
   }, [effectiveSrc, retryKey]);
 
-
   return (
     <div
+      ref={containerRef}
       className="ar-viewer"
       style={{
         width: "100%",
@@ -185,7 +226,14 @@ function ARViewerClient({ src, alt, poster }) {
                 marginBottom: "1.5rem",
               }}
             />
-            <p style={{ margin: "0 0 1.5rem 0", color: "#fff", fontSize: "1.1rem", fontWeight: 600 }}>
+            <p
+              style={{
+                margin: "0 0 1.5rem 0",
+                color: "#fff",
+                fontSize: "1.1rem",
+                fontWeight: 600,
+              }}
+            >
               Loading 3D model…
             </p>
             <div
@@ -201,19 +249,28 @@ function ARViewerClient({ src, alt, poster }) {
                 style={{
                   width: `${progress}%`,
                   height: "100%",
-                  background: "linear-gradient(90deg, #f093fb 0%, #f5576c 100%)",
+                  background:
+                    "linear-gradient(90deg, #f093fb 0%, #f5576c 100%)",
                   transition: "width 0.3s ease",
                   borderRadius: "10px",
                 }}
               />
             </div>
             {progress > 0 && (
-              <p style={{ margin: "1rem 0 0 0", fontSize: "1rem", color: "#fff", fontWeight: 600 }}>
+              <p
+                style={{
+                  margin: "1rem 0 0 0",
+                  fontSize: "1rem",
+                  color: "#fff",
+                  fontWeight: 600,
+                }}
+              >
                 {progress}%
               </p>
             )}
           </div>
         )}
+
         {error && (
           <div
             style={{
@@ -231,10 +288,26 @@ function ARViewerClient({ src, alt, poster }) {
             }}
           >
             <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚠️</div>
-            <p style={{ margin: "0 0 0.5rem 0", color: "#fff", fontWeight: 700, fontSize: "1.2rem" }}>
-              {onMobile ? "This 3D model couldn't load." : "AR isn't available on this device."}
+            <p
+              style={{
+                margin: "0 0 0.5rem 0",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: "1.2rem",
+              }}
+            >
+              {onMobile
+                ? "This 3D model couldn't load."
+                : "AR isn't available on this device."}
             </p>
-            <p style={{ margin: "0 0 1.5rem 0", fontSize: "0.95rem", color: "rgba(255,255,255,0.9)", lineHeight: 1.6 }}>
+            <p
+              style={{
+                margin: "0 0 1.5rem 0",
+                fontSize: "0.95rem",
+                color: "rgba(255,255,255,0.9)",
+                lineHeight: 1.6,
+              }}
+            >
               {onMobile
                 ? "Check your connection or try another menu item. Use Chrome on Android or Safari on iPhone."
                 : "Open this page on your phone (Chrome on Android or Safari on iPhone) to view in AR."}
@@ -278,29 +351,31 @@ function ARViewerClient({ src, alt, poster }) {
               textAlign: "center",
             }}
           >
-            <p style={{ margin: "0 0 1rem 0", fontSize: "1rem", fontWeight: 600 }}>
-              🫙 3D model loads when you tap &quot;View in AR&quot;
+            <p
+              style={{ margin: "0 0 1rem 0", fontSize: "1rem", fontWeight: 600 }}
+            >
+              Scroll to load 3D model
             </p>
             <button
               type="button"
               className="ar-vr-button"
-              onClick={handleViewInAR}
+              onClick={() => {
+                setModelRequested(true);
+                setLoading(true);
+              }}
               style={{
-                padding: "14px 32px",
-                fontSize: "1.1rem",
-                fontWeight: 700,
+                marginTop: "0.5rem",
+                padding: "12px 24px",
+                fontSize: "0.95rem",
+                fontWeight: 600,
                 color: "#fff",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                border: "none",
-                borderRadius: "16px",
+                background: "rgba(255,255,255,0.2)",
+                border: "2px solid rgba(255,255,255,0.5)",
+                borderRadius: "12px",
                 cursor: "pointer",
-                boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
-                transition: "all 0.3s ease",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
               }}
             >
-              🎯 View in AR
+              Load model now
             </button>
           </div>
         ) : (
@@ -311,13 +386,18 @@ function ARViewerClient({ src, alt, poster }) {
               src={effectiveSrc}
               alt={alt || "3D model"}
               ar
-              ar-modes="webxr scene-viewer quick-look"
+              ar-modes={AR_MODES}
               ar-scale="fixed"
-              ar-scale-value="0.25"
-              environment-image="neutral"
-              exposure="1"
-              shadow-intensity="1"
-              tone-mapping="commerce"
+              ar-scale-value={AR_SCALE_METERS}
+              ar-placement={AR_PLACEMENT}
+              camera-orbit={CAMERA_ORBIT}
+              camera-target={CAMERA_TARGET}
+              min-camera-orbit={MIN_CAMERA_ORBIT}
+              max-camera-orbit={MAX_CAMERA_ORBIT}
+              environment-image={ENVIRONMENT_IMAGE}
+              exposure={EXPOSURE}
+              shadow-intensity={SHADOW_INTENSITY}
+              tone-mapping={TONE_MAPPING}
               camera-controls
               touch-action="pan-y pinch-zoom"
               interaction-policy="allow-when-focused"
@@ -340,48 +420,68 @@ function ARViewerClient({ src, alt, poster }) {
                 left: "50%",
                 transform: "translateX(-50%)",
                 display: "flex",
-                gap: "10px",
-                flexWrap: "wrap",
-                justifyContent: "center",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
                 zIndex: 10,
               }}
             >
-              <button
-                type="button"
-                className="ar-vr-button"
-                onClick={handleReset}
+              <div
                 style={{
-                  padding: "10px 20px",
-                  fontSize: "0.95rem",
-                  fontWeight: 600,
-                  color: "#fff",
-                  background: "rgba(0,0,0,0.4)",
-                  border: "none",
-                  borderRadius: "12px",
-                  cursor: "pointer",
-                  backdropFilter: "blur(8px)",
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
                 }}
               >
-                Reset
-              </button>
-              <button
-                type="button"
-                className="ar-vr-button"
-                onClick={handleExitAR}
+                <button
+                  type="button"
+                  className="ar-vr-button"
+                  onClick={handleReset}
+                  style={{
+                    padding: "10px 20px",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: "rgba(0,0,0,0.4)",
+                    border: "none",
+                    borderRadius: "12px",
+                    cursor: "pointer",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  Reset view
+                </button>
+                <button
+                  type="button"
+                  className="ar-vr-button"
+                  onClick={handleExitAR}
+                  style={{
+                    padding: "10px 20px",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: "rgba(0,0,0,0.4)",
+                    border: "none",
+                    borderRadius: "12px",
+                    cursor: "pointer",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  Exit AR
+                </button>
+              </div>
+              <p
                 style={{
-                  padding: "10px 20px",
-                  fontSize: "0.95rem",
-                  fontWeight: 600,
-                  color: "#fff",
-                  background: "rgba(0,0,0,0.4)",
-                  border: "none",
-                  borderRadius: "12px",
-                  cursor: "pointer",
-                  backdropFilter: "blur(8px)",
+                  margin: 0,
+                  fontSize: "0.75rem",
+                  color: "rgba(255,255,255,0.85)",
+                  textAlign: "center",
+                  maxWidth: "280px",
                 }}
               >
-                Exit AR
-              </button>
+                To place again: Exit AR, then tap View in AR
+              </p>
             </div>
           </>
         )}
@@ -401,7 +501,10 @@ function ARViewerClient({ src, alt, poster }) {
               padding: "1.5rem",
             }}
             onClick={dismissTapToPlaceAndEnterAR}
-            onTouchEnd={(e) => { e.preventDefault(); dismissTapToPlaceAndEnterAR(); }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              dismissTapToPlaceAndEnterAR();
+            }}
           >
             <div
               style={{
@@ -414,11 +517,25 @@ function ARViewerClient({ src, alt, poster }) {
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <p style={{ margin: "0 0 0.5rem 0", fontSize: "1.1rem", fontWeight: 700, color: "#1a1a1a" }}>
+              <p
+                style={{
+                  margin: "0 0 0.5rem 0",
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                  color: "#1a1a1a",
+                }}
+              >
                 Tap to place item
               </p>
-              <p style={{ margin: "0 0 1rem 0", fontSize: "0.9rem", color: "#555" }}>
-                Tap a surface in your space to place the model.
+              <p
+                style={{
+                  margin: "0 0 1rem 0",
+                  fontSize: "0.9rem",
+                  color: "#555",
+                }}
+              >
+                Tap a flat surface (e.g. table) to place the model. Placement
+                locks after first tap.
               </p>
               <button
                 type="button"
@@ -428,7 +545,8 @@ function ARViewerClient({ src, alt, poster }) {
                   fontSize: "1rem",
                   fontWeight: 600,
                   color: "#fff",
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   border: "none",
                   borderRadius: "12px",
                   cursor: "pointer",

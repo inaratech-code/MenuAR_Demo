@@ -49,6 +49,9 @@ On the AR page, when you’re on HTTP, a yellow notice explains this and repeats
     page.js          # AR page for one menu item
 /components
   ARViewer.js        # Client-only model-viewer wrapper
+/lib
+  arSupport.js       # AR support detection (HTTPS + device)
+  modelViewerConfig.js # 3D/AR constants (scale, camera, lighting)
 /data
   menu.json          # Menu items (slug, name, price, description, modelPath)
 /public
@@ -104,7 +107,18 @@ Slugs should be URL-safe (lowercase, hyphens, no spaces).
    The included `menu.json` uses a demo model URL so the app works without any local files. To use your own model, add a `.glb` under `public/models/` and set `modelPath` to `"/models/yourfile.glb"` for that item.
 
 5. **Optimizing for mobile and slow networks**  
-   For low-end Android and fast loading: keep GLB file size small, use compressed textures (e.g. KTX2 or smaller PNG/JPG), and limit polygon count. The app lazy-loads the 3D model only when the user taps "View in AR", so the initial page stays light.
+   For low-end Android and fast loading: keep GLB file size small, use compressed textures (e.g. KTX2 or smaller PNG/JPG), and limit polygon count. The app lazy-loads the 3D model when the viewer scrolls into view, so the initial page stays light.
+
+### 3D model authoring (consistency & AR)
+
+For consistent scale, placement, and performance across items:
+
+- **Coordinate system:** Use **Y-up** (glTF default). Models are placed on horizontal surfaces (tables, floor) with the app’s `ar-placement="floor"`.
+- **Pivot:** Author models with the **pivot at the bottom center** of the object (e.g. base of a plate or cup). This avoids floating or sinking into the surface when placed in AR.
+- **Scale:** Use **real-world units** (e.g. 1 unit = 1 meter). The app uses a fixed AR scale (`ar-scale-value`) so all items appear at a consistent size; author plates, drinks, and combos at sensible relative sizes.
+- **Clean assets:** Remove unnecessary geometry, duplicate materials, or hidden meshes to improve load time and stability on low-end devices.
+
+Configuration (camera, lighting, AR scale) is centralized in `lib/modelViewerConfig.js` so you can adjust framing and limits in one place.
 
 ---
 
