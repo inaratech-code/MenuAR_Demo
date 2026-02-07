@@ -68,6 +68,7 @@ Edit `data/menu.json`. Each item needs:
 | `price`    | e.g. `"$14.99"`                                  |
 | `description` | Short text for the AR page                    |
 | `modelPath`   | URL or path to the 3D model (see below)       |
+| `imagePath` (optional) | Path to image for 2D fallback when AR is not supported |
 
 Example:
 
@@ -101,6 +102,9 @@ Slugs should be URL-safe (lowercase, hyphens, no spaces).
 
 4. **Keeping the starter runnable**  
    The included `menu.json` uses a demo model URL so the app works without any local files. To use your own model, add a `.glb` under `public/models/` and set `modelPath` to `"/models/yourfile.glb"` for that item.
+
+5. **Optimizing for mobile and slow networks**  
+   For low-end Android and fast loading: keep GLB file size small, use compressed textures (e.g. KTX2 or smaller PNG/JPG), and limit polygon count. The app lazy-loads the 3D model only when the user taps "View in AR", so the initial page stays light.
 
 ---
 

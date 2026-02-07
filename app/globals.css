@@ -55,6 +55,8 @@ a:hover {
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5) !important;
 }
 
-button[slot="vr-button"]:hover {
-  box-shadow: 0 8px 25px rgba(240, 147, 251, 0.5) !important;
+/* Prevent accidental page scroll while interacting with 3D/AR viewer */
+.ar-viewer {
+  touch-action: pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
 }
