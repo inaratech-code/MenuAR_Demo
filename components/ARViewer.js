@@ -16,11 +16,11 @@ function isLikelyARCapableMobile() {
 const TAP_TO_PLACE_STORAGE_KEY = "ar-menu-tap-to-place-seen";
 
 function ARViewerClient({ src, alt, poster }) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [modelRequested, setModelRequested] = useState(false);
+  const [modelRequested, setModelRequested] = useState(true);
   const [showTapToPlaceOverlay, setShowTapToPlaceOverlay] = useState(false);
   const pendingActivateARRef = useRef(false);
   const viewerRef = useRef(null);
@@ -31,7 +31,7 @@ function ARViewerClient({ src, alt, poster }) {
       ? `${window.location.origin}${src}`
       : src || "";
 
-  const effectiveSrc = modelRequested ? fullSrc : undefined;
+  const effectiveSrc = modelRequested && fullSrc ? fullSrc : undefined;
 
   const handleRetry = () => {
     setError(false);
@@ -117,8 +117,6 @@ function ARViewerClient({ src, alt, poster }) {
       }
     };
     el.addEventListener("load", onLoadWithAR);
-
-    el.addEventListener("load", onLoad);
     el.addEventListener("error", onErr);
     el.addEventListener("progress", onProgress);
     el.addEventListener("ar-status", () => {});
@@ -324,9 +322,9 @@ function ARViewerClient({ src, alt, poster }) {
               touch-action="pan-y pinch-zoom"
               interaction-policy="allow-when-focused"
               auto-rotate
-              loading="lazy"
-              reveal="interaction"
-              preload="none"
+              loading="eager"
+              reveal="auto"
+              preload="auto"
               style={{
                 width: "100%",
                 height: "320px",

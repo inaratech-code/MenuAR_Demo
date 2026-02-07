@@ -133,12 +133,51 @@ export default function ARItemPageClient({ item }) {
               padding: "1.5rem",
               boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
               backdropFilter: "blur(10px)",
+              marginBottom: "1rem",
+            }}
+          >
+            <p style={{ margin: "0 0 0.75rem 0", fontSize: "0.9rem", color: "#667eea", fontWeight: 600 }}>
+              Item
+            </p>
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "200px",
+                margin: "0 auto 0",
+                aspectRatio: "1",
+                borderRadius: "12px",
+                overflow: "hidden",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src={imageUrl}
+                alt={item.name}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </div>
+          </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.95)",
+              borderRadius: "20px",
+              padding: "1.5rem",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+              backdropFilter: "blur(10px)",
               marginBottom: "1.5rem",
             }}
           >
             <ARViewer
               src={item.modelPath}
               alt={`${item.name} – view in AR`}
+              poster={imageUrl}
             />
           </div>
           <ARHttpsNotice />
@@ -198,11 +237,9 @@ export default function ARItemPageClient({ item }) {
               justifyContent: "center",
             }}
           >
-            <Image
+            <img
               src={imageUrl}
               alt={item.name}
-              width={320}
-              height={320}
               style={{
                 width: "100%",
                 height: "100%",
